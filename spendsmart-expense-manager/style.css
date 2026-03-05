@@ -1,0 +1,251 @@
+/* Global */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #000;
+    color: #fff;
+    overflow-x: hidden;
+}
+
+/* Snow effect */
+@keyframes snow {
+    0% { transform: translateY(-10px) rotate(0deg); }
+    100% { transform: translateY(100vh) rotate(360deg); }
+}
+
+.snowflake {
+    position: fixed;
+    top: -10px;
+    color: white;
+    font-size: 1em;
+    z-index: 1;
+    user-select: none;
+    animation-name: snow;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+/* Header bar */
+.header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+#theme-toggle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 8px;
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #fff;
+    transition: transform 0.2s;
+}
+
+#theme-toggle:hover {
+    transform: scale(1.2);
+}
+
+/* Main Container */
+.container {
+    position: relative;
+    max-width: 650px;
+    margin: 50px auto;
+    padding: 30px;
+    background: rgba(0,0,0,0.85);
+    border-radius: 15px;
+    box-shadow: 0 0 25px #FFD700;
+    z-index: 10;
+}
+
+/* Light theme overrides */
+body.light {
+    background: #f0f0f0;
+    color: #000;
+}
+
+body.light .container {
+    background: rgba(255,255,255,0.9);
+    box-shadow: 0 0 25px #999;
+}
+
+body.light input {
+    background: #fff;
+    color: #000;
+}
+
+body.light #theme-toggle {
+    color: #000;
+}
+
+/* Animated Text with Night Sky Effect */
+.animated-text {
+    font-size: 3rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 30px;
+    background: url('https://images.unsplash.com/photo-1601758123927-33e07e02d5b3?auto=format&fit=crop&w=1470&q=80') repeat;
+    background-size: cover;
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: moveBG 10s linear infinite;
+}
+
+@keyframes moveBG {
+    0% { background-position: 0 0; }
+    100% { background-position: 500px 0; }
+}
+
+/* Input Group */
+.input-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+input, button {
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+input {
+    background: #222;
+    color: #fff;
+}
+
+input:focus {
+    outline: none;
+    box-shadow: 0 0 10px #FFD700;
+    transform: scale(1.02);
+}
+
+button {
+    background: #FFD700;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px #FFD700;
+}
+
+/* Expense Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th, td {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #fff;
+    transition: background 0.3s ease;
+}
+
+th {
+    color: #FFD700;
+}
+
+tr:hover td {
+    background: rgba(255, 215, 0, 0.1);
+}
+
+td {
+    color: #fff;
+    word-break: break-word;
+}
+
+/* Filter and summary */
+.filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.filter-group label {
+    font-size: 0.9rem;
+}
+
+.filter-group input {
+    width: auto;
+}
+
+#filter-btn, #clear-filter-btn {
+    background: #444;
+    color: #fff;
+    font-weight: bold;
+}
+
+#filter-btn:hover, #clear-filter-btn:hover {
+    background: #666;
+}
+
+.summary {
+    text-align: right;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+/* Delete button */
+.delete-btn {
+    background: #ff4d4d;
+    color: #fff;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s ease;
+}
+
+.delete-btn:hover {
+    background: #ff1a1a;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .input-group {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .summary {
+        text-align: center;
+    }
+}
+
+/* Row animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+tbody tr.new-row {
+    animation: fadeIn 0.4s ease;
+}
+
+

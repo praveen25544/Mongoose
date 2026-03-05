@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expense Tracker</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Snow background -->
+<div id="snow-container"></div>
+
+<div class="container">
+    <!-- Animated Text with Night Sky Effect and theme toggle -->
+    <div class="header-bar">
+        <h1 class="animated-text">EXPENSE TRACKER</h1>
+        <button id="theme-toggle" title="Toggle light/dark mode">🌞</button>
+    </div>
+
+    <div class="input-group">
+        <input type="text" id="description" placeholder="Expense Description">
+        <input type="number" id="amount" placeholder="Amount" min="0" step="0.01">
+        <input type="date" id="date">
+        <button id="add-btn">Add Expense</button>
+    </div>
+
+    <div class="filter-group">
+        <label>From <input type="date" id="from-date"></label>
+        <label>To <input type="date" id="to-date"></label>
+        <button id="filter-btn">Filter</button>
+        <button id="clear-filter-btn">Clear</button>
+    </div>
+
+    <div class="summary">
+        <span>Total: $<span id="total">0.00</span></span>
+    </div>
+
+    <table id="expenseTable">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
