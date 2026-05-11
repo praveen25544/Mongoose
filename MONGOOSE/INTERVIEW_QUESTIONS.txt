@@ -1,0 +1,827 @@
+═══════════════════════════════════════════════════════════════════════════════════════
+                    🎤 MONGOOSE & MongoDB INTERVIEW QUESTIONS FOR FRESHERS
+═══════════════════════════════════════════════════════════════════════════════════════
+
+This document contains common questions freshers face in interviews about Mongoose and MongoDB.
+Study these thoroughly to ace your interviews!
+
+═══════════════════════════════════════════════════════════════════════════════════════
+1. BASIC CONCEPTS
+═══════════════════════════════════════════════════════════════════════════════════════
+
+Q1: What is MongoDB? How is it different from SQL databases?
+A:  MongoDB is a NoSQL, document-oriented database.
+    
+    Differences:
+    ✓ SQL: Table-based, structured schema, JOIN operations
+    ✓ MongoDB: Collection-based, flexible schema, embedded documents
+    ✓ SQL: ACID transactions (newer versions), MongoDB: ACID transactions (4.0+)
+    ✓ SQL: Vertical scaling, MongoDB: Horizontal scaling (sharding)
+    ✓ SQL: Fixed columns, MongoDB: Dynamic fields
+
+    Example:
+    SQL Table: users (id, name, email, age)
+    MongoDB: { _id: ObjectId, name: "John", email: "john@example.com", age: 25, extra: "data" }
+
+---
+
+Q2: What is Mongoose and why do we use it?
+A:  Mongoose is an ODM (Object Document Mapper) for MongoDB in Node.js.
+    
+    Why use Mongoose:
+    ✓ Schema validation - Define document structure
+    ✓ Middleware/Hooks - pre/post operations
+    ✓ Methods - Custom functions on documents
+    ✓ Query builders - Easy query syntax
+    ✓ Error handling - Better error messages
+    ✓ Type casting - Automatic type conversion
+    ✓ Virtuals - Computed fields
+    ✓ Plugins - Reusable features
+
+    Alternative: Native MongoDB driver (less features, more flexibility)
+
+---
+
+Q3: What is _id in MongoDB?
+A:  _id is the unique identifier for each document in MongoDB.
+    
+    Properties:
+    ✓ Automatically created if not provided
+    ✓ Default type: ObjectId
+    ✓ Composed of: timestamp (4) + machine (3) + process (2) + random (3) = 12 bytes
+    ✓ Always indexed
+    ✓ Cannot be modified after document creation
+    ✓ Can be custom type (String, Number, etc.)
+
+    Example:
+    { _id: ObjectId("507f1f77bcf86cd799439011"), name: "John" }
+    // or custom
+    { _id: "user123", name: "John" }
+
+---
+
+Q4: What is the difference between SQL JOIN and MongoDB populate()?
+A:  JOIN: Combines rows from multiple tables based on conditions
+    populate(): Fetches referenced documents from another collection
+    
+    SQL:
+    SELECT * FROM users 
+    JOIN posts ON users.id = posts.user_id 
+    WHERE users.id = 1;
+    
+    MongoDB (with Mongoose):
+    User.findById(1).populate('posts');
+    // or with details
+    User.findById(1).populate('posts').select('name email');
+
+    Key Difference:
+    ✓ JOIN: Relational, must exist in other table
+    ✓ populate(): Document reference, fetches related docs
+
+═══════════════════════════════════════════════════════════════════════════════════════
+2. SCHEMA & VALIDATION
+═══════════════════════════════════════════════════════════════════════════════════════
+
+Q5: Explain Mongoose Schema. What are schema types?
+A:  Schema defines the structure of documents in a collection.
+    
+    Schema Types:
+    ✓ String    - Text data
+    ✓ Number    - Integer or decimal
+    ✓ Boolean   - true/false
+    ✓ Date      - Date and time
+    ✓ ObjectId  - Reference to other documents
+    ✓ Array     - Multiple values
+    ✓ Mixed     - Any data type
+    ✓ Buffer    - Binary data
+    ✓ Decimal128 - High precision numbers
+    
+    Example:
+    const userSchema = new Schema({
+      name: String,
+      age: Number,
+      active: Boolean,
+      joinDate: Date,
+      posts: [ObjectId],
+      metadata: Mixed
+    });
+
+---
+
+Q6: What is the difference between Schema and Model?
+A:  Schema: Blueprint/definition of data structure
+    Model: Constructor compiled from Schema, interacts with database
+    
+    Analogy:
+    Schema = Class definition
+    Model = Class
+    Document = Instance of class
+    
+    Example:
+    // Schema (blueprint)
+    const userSchema = new Schema({ name: String });
+    
+    // Model (constructor)
+    const User = mongoose.model('User', userSchema);
+    
+    // Document (instance)
+    const user = new User({ name: "John" });
+    await user.save();
+
+---
+
+Q7: How do you validate fields in Mongoose Schema?
+A:  Validation Rules:
+    ✓ required: [true, 'Error message'] - Field must exist
+    ✓ minlength: 5 - Minimum string length
+    ✓ maxlength: 100 - Maximum string length
+    ✓ min: 0 - Minimum number value
+    ✓ max: 100 - Maximum number value
+    ✓ enum: ['active', 'inactive'] - Allowed values
+    ✓ match: /regex/ - Pattern matching
+    ✓ validate: function - Custom validation
+    ✓ unique: true - No duplicate values
+    
+    Example:
+    const postSchema = new Schema({
+      title: {
+        type: String,
+        required: [true, "Title is required"],
+        minlength: [5, "Title must be 5+ chars"],
+        maxlength: [100, "Title max 100 chars"],
+        trim: true
+      },
+      rating: {
+        type: Number,
+        min: 1,
+        max: 5
+      },
+      status: {
+        type: String,
+        enum: ["draft", "published"],
+        default: "draft"
+      }
+    });
+
+---
+
+Q8: What are Schema field options?
+A:  Common Field Options:
+    ✓ type: Data type
+    ✓ required: Boolean or [Boolean, message]
+    ✓ default: Default value
+    ✓ trim: Remove whitespace (String)
+    ✓ lowercase: Convert to lowercase (String)
+    ✓ uppercase: Convert to uppercase (String)
+    ✓ validate: Custom validation
+    ✓ unique: Ensure uniqueness
+    ✓ sparse: Allow multiple null values
+    ✓ index: Create database index
+    ✓ select: Include/exclude from queries by default
+    
+    Example:
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      validate: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    }
+
+═══════════════════════════════════════════════════════════════════════════════════════
+3. CRUD OPERATIONS
+═══════════════════════════════════════════════════════════════════════════════════════
+
+Q9: Explain CRUD operations with Mongoose methods.
+A:  CREATE - Add new document:
+    ✓ Model.create(data)
+    ✓ new Model(data).save()
+    ✓ Model.insertMany([data1, data2])
+    
+    READ - Fetch documents:
+    ✓ Model.find() - All documents
+    ✓ Model.findById(id) - By ID
+    ✓ Model.findOne(query) - First match
+    ✓ Model.countDocuments() - Count
+    
+    UPDATE - Modify documents:
+    ✓ Model.updateOne(query, update)
+    ✓ Model.updateMany(query, update)
+    ✓ Model.findByIdAndUpdate(id, update, {new: true})
+    ✓ Model.findOneAndUpdate(query, update)
+    
+    DELETE - Remove documents:
+    ✓ Model.deleteOne(query)
+    ✓ Model.deleteMany(query)
+    ✓ Model.findByIdAndDelete(id)
+    ✓ Model.findOneAndDelete(query)
+
+---
+
+Q10: What is the {new: true} option in findByIdAndUpdate?
+A:  {new: true} returns the UPDATED document instead of original.
+    
+    Without {new: true}:
+    const post = await Post.findByIdAndUpdate(
+      id, 
+      { status: 'published' }
+    );
+    // Returns document BEFORE update
+    
+    With {new: true}:
+    const post = await Post.findByIdAndUpdate(
+      id, 
+      { status: 'published' },
+      { new: true }
+    );
+    // Returns document AFTER update
+    
+    Other useful options:
+    ✓ {new: true} - Return updated document
+    ✓ {runValidators: true} - Run schema validators
+    ✓ {upsert: true} - Create if not exists
+    ✓ {select: 'field1 field2'} - Return specific fields
+
+---
+
+Q11: What is the difference between .save() and .updateOne()?
+A:  .save(): Saves entire document, triggers middleware
+    .updateOne(): Updates specific fields, lighter operation
+    
+    .save():
+    const user = await User.findById(id);
+    user.name = "John";
+    await user.save();
+    // Triggers pre/post('save') middleware
+    
+    .updateOne():
+    await User.updateOne({ _id: id }, { name: "John" });
+    // Faster, doesn't trigger save middleware
+    // Cannot use document methods after
+    
+    When to use:
+    ✓ .save() - Need middleware execution, single document, complex updates
+    ✓ .updateOne() - Bulk updates, simple field changes, performance critical
+
+═══════════════════════════════════════════════════════════════════════════════════════
+4. QUERY OPTIMIZATION
+═══════════════════════════════════════════════════════════════════════════════════════
+
+Q12: What is .lean() and when should we use it?
+A:  .lean() returns plain JavaScript objects instead of Mongoose documents.
+    
+    Differences:
+    With lean():
+    const posts = await Post.find().lean();
+    // Returns plain objects: { _id, title, content }
+    // Faster, less memory
+    // Cannot use document methods
+    
+    Without lean():
+    const posts = await Post.find();
+    // Returns Mongoose documents with methods
+    // Slower, more memory
+    // Can use document.save(), document.populate()
+    
+    When to use:
+    ✓ Use .lean() - Read-only, GET requests, reports, exports
+    ✗ Don't use .lean() - Updates, need document methods, need middleware
+
+---
+
+Q13: What is select() and how does it improve performance?
+A:  select() returns only specified fields (Projection).
+    
+    Without select():
+    const posts = await Post.find();
+    // Returns all fields: _id, title, content, author, views, tags, etc.
+    
+    With select():
+    const posts = await Post.find().select('title author createdAt');
+    // Returns only: _id (always), title, author, createdAt
+    
+    Exclude fields:
+    const posts = await Post.find().select('-content');
+    // Returns all except content
+    
+    Benefits:
+    ✓ Reduced data transfer from database
+    ✓ Lower memory usage
+    ✓ Faster query execution
+    ✓ Better API response time
+
+---
+
+Q14: Explain limit() and skip() for pagination.
+A:  .limit() - Maximum documents to return
+    .skip() - Number of documents to skip
+    
+    Example - Get 10 posts per page:
+    // Page 1: skip 0, limit 10 (items 1-10)
+    let page = 1;
+    let limit = 10;
+    let skip = (page - 1) * limit;
+    const posts = await Post.find()
+      .limit(limit)
+      .skip(skip)
+      .lean();
+    
+    // Page 2: skip 10, limit 10 (items 11-20)
+    page = 2;
+    skip = (page - 1) * limit; // = 10
+    
+    Formula: skip = (pageNumber - 1) * itemsPerPage
+    
+    Full pagination example:
+    const page = req.query.page || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+    
+    const posts = await Post.find()
+      .skip(skip)
+      .limit(limit)
+      .lean();
+    
+    const total = await Post.countDocuments();
+    const pages = Math.ceil(total / limit);
+
+---
+
+Q15: What is .sort() and how does it work?
+A:  .sort() orders query results in ascending or descending order.
+    
+    Ascending (1):
+    const posts = await Post.find().sort({ createdAt: 1 });
+    // Oldest posts first
+    
+    Descending (-1):
+    const posts = await Post.find().sort({ createdAt: -1 });
+    // Newest posts first
+    
+    Multiple fields:
+    const posts = await Post.find().sort({ status: 1, createdAt: -1 });
+    // First by status (ascending), then by createdAt (descending)
+    
+    Common uses:
+    ✓ sort({ createdAt: -1 }) - Newest first
+    ✓ sort({ views: -1 }) - Most popular first
+    ✓ sort({ price: 1 }) - Cheapest first
+
+═══════════════════════════════════════════════════════════════════════════════════════
+5. ADVANCED QUERIES
+═══════════════════════════════════════════════════════════════════════════════════════
+
+Q16: What is .populate() and when to use it?
+A:  .populate() fetches referenced documents from another collection.
+    
+    Schema with reference:
+    const postSchema = new Schema({
+      title: String,
+      author: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'  // Reference to User model
+      }
+    });
+    
+    Without populate():
+    const post = await Post.findById(id);
+    // Returns: { _id, title, author: ObjectId("507f...") }
+    
+    With populate():
+    const post = await Post.findById(id).populate('author');
+    // Returns: { _id, title, author: { _id, name, email } }
+    
+    With specific fields:
+    const post = await Post.findById(id)
+      .populate('author', 'name email');
+    // Returns: { _id, title, author: { _id, name, email } }
+    
+    Nested populate():
+    const post = await Post.findById(id)
+      .populate({
+        path: 'author',
+        select: 'name email',
+        populate: { path: 'country' }
+      });
+
+---
+
+Q17: Explain MongoDB Aggregation Pipeline.
+A:  Aggregation processes documents in stages, like a factory assembly line.
+    
+    Stages:
+    ✓ $match - Filter documents (like WHERE)
+    ✓ $group - Group and calculate (like GROUP BY)
+    ✓ $sort - Sort results
+    ✓ $project - Select fields
+    ✓ $limit - Limit documents
+    ✓ $skip - Skip documents
+    ✓ $lookup - Join with other collections
+    ✓ $unwind - Flatten arrays
+    ✓ $count - Count documents
+    ✓ $addFields - Add new fields
+    
+    Example - Get posts count by author:
+    const stats = await Post.aggregate([
+      { $match: { status: "published" } },
+      { $group: { 
+          _id: '$author',
+          count: { $sum: 1 },
+          posts: { $push: '$title' },
+          avgViews: { $avg: '$views' }
+        }
+      },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]);
+    
+    Output:
+    [
+      { _id: "john", count: 5, posts: ["Post1", "Post2"], avgViews: 100 },
+      { _id: "jane", count: 3, posts: ["Post3"], avgViews: 150 }
+    ]
+
+---
+
+Q18: What are MongoDB operators ($inc, $push, $pull, etc.)?
+A:  Update operators modify document fields:
+    
+    ✓ $set - Set field value
+    ✓ $inc - Increment number
+    ✓ $push - Add to array
+    ✓ $pull - Remove from array
+    ✓ $unset - Remove field
+    ✓ $addToSet - Add to array if not exists
+    ✓ $pop - Remove first/last array element
+    
+    Examples:
+    // Increment views
+    await Post.updateOne({ _id: id }, { $inc: { views: 1 } });
+    
+    // Add tag to array
+    await Post.updateOne({ _id: id }, { $push: { tags: 'mongodb' } });
+    
+    // Remove tag from array
+    await Post.updateOne({ _id: id }, { $pull: { tags: 'mongodb' } });
+    
+    // Add multiple at once
+    await Post.updateOne(
+      { _id: id },
+      {
+        $set: { status: 'published' },
+        $inc: { views: 5 },
+        $push: { tags: 'featured' }
+      }
+    );
+
+═══════════════════════════════════════════════════════════════════════════════════════
+6. ERROR HANDLING & VALIDATION
+═══════════════════════════════════════════════════════════════════════════════════════
+
+Q19: What are common MongoDB/Mongoose errors?
+A:  ValidationError:
+    ✓ Cause: Document doesn't match schema
+    ✓ Name: err.name === "ValidationError"
+    ✓ Fix: Check required fields, data types, ranges
+    
+    CastError:
+    ✓ Cause: Invalid ObjectId or type mismatch
+    ✓ Name: err.name === "CastError"
+    ✓ Fix: Validate ID format, type conversions
+    
+    DuplicateKeyError (11000):
+    ✓ Cause: Unique field duplicate
+    ✓ Code: err.code === 11000
+    ✓ Fix: Check unique fields, ensure no duplicates
+    
+    Error handling example:
+    try {
+      const user = await User.create(data);
+    } catch (err) {
+      if (err.name === "ValidationError") {
+        // Handle validation
+        return res.status(400).json({ error: err.message });
+      }
+      if (err.code === 11000) {
+        // Handle duplicate
+        return res.status(409).json({ error: "Email already exists" });
+      }
+      if (err.name === "CastError") {
+        // Handle invalid ID
+        return res.status(400).json({ error: "Invalid ID format" });
+      }
+    }
+
+---
+
+Q20: How do you handle async/await errors in Express routes?
+A:  Try-catch block:
+    
+    app.post("/users", async (req, res) => {
+      try {
+        const user = await User.create(req.body);
+        res.status(201).json(user);
+      } catch (err) {
+        if (err.name === "ValidationError") {
+          return res.status(400).json({ error: err.message });
+        }
+        res.status(500).json({ error: "Server error" });
+      }
+    });
+    
+    Async error wrapper:
+    const asyncHandler = (fn) => (req, res, next) => {
+      Promise.resolve(fn(req, res, next)).catch(next);
+    };
+    
+    Use:
+    app.post("/users", asyncHandler(async (req, res) => {
+      const user = await User.create(req.body);
+      res.status(201).json(user);
+    }));
+
+═══════════════════════════════════════════════════════════════════════════════════════
+7. MIDDLEWARE & HOOKS
+═══════════════════════════════════════════════════════════════════════════════════════
+
+Q21: What are Mongoose middleware/hooks?
+A:  Middleware runs before or after specific operations.
+    
+    Types:
+    ✓ Pre-hooks - Run BEFORE operation
+    ✓ Post-hooks - Run AFTER operation
+    
+    Operations:
+    ✓ save - When .save() called
+    ✓ validate - When validation runs
+    ✓ find - When .find(), .findById() etc. called
+    ✓ remove - When .remove() called
+    ✓ updateOne - When .updateOne() called
+    
+    Examples:
+    
+    Pre-save to hash password:
+    userSchema.pre('save', async function(next) {
+      if (!this.isModified('password')) return next();
+      this.password = await bcrypt.hash(this.password, 10);
+      next();
+    });
+    
+    Post-save logging:
+    userSchema.post('save', function() {
+      console.log('User saved:', this.name);
+    });
+    
+    Pre-find to filter:
+    postSchema.pre('find', function(next) {
+      this.where({ deleted: false });
+      next();
+    });
+
+---
+
+Q22: What are Schema methods and static methods?
+A:  Instance Methods - Called on document instance:
+    
+    userSchema.methods.comparePassword = function(password) {
+      return bcrypt.compareSync(password, this.password);
+    };
+    
+    Usage:
+    const user = await User.findById(id);
+    if (user.comparePassword(inputPassword)) { }
+    
+    Static Methods - Called on Model:
+    
+    userSchema.statics.findByEmail = function(email) {
+      return this.findOne({ email });
+    };
+    
+    Usage:
+    const user = await User.findByEmail('john@example.com');
+
+═══════════════════════════════════════════════════════════════════════════════════════
+8. BEST PRACTICES & PERFORMANCE
+═══════════════════════════════════════════════════════════════════════════════════════
+
+Q23: How do you optimize MongoDB queries?
+A:  1. Use .lean() for read-only queries
+    2. Use .select() for field projection
+    3. Create indexes on frequently searched fields
+    4. Use pagination (limit + skip)
+    5. Avoid N+1 queries with .populate()
+    6. Use .countDocuments() sparingly
+    7. Cache frequently accessed data
+    8. Use bulk operations for multiple updates
+    9. Monitor slow queries with profiling
+    10. Use connection pooling
+    
+    Example optimized query:
+    const posts = await Post.find({ status: 'published' })
+      .select('title author createdAt')     // Projection
+      .limit(10)                            // Limit results
+      .skip((page - 1) * 10)                // Pagination
+      .sort({ createdAt: -1 })              // Sorting
+      .lean()                               // Performance
+      .exec();                              // Execute query
+
+---
+
+Q24: What are indexes and why are they important?
+A:  Indexes speed up query searches.
+    
+    Without index: Scans all documents (O(n))
+    With index: Binary search (O(log n))
+    
+    Creating indexes:
+    
+    Single field:
+    postSchema.index({ author: 1 });
+    
+    Compound index:
+    postSchema.index({ status: 1, createdAt: -1 });
+    
+    Unique index:
+    userSchema.index({ email: 1 }, { unique: true });
+    // Or: email: { type: String, unique: true }
+    
+    Text search index:
+    postSchema.index({ title: 'text', content: 'text' });
+    
+    When to index:
+    ✓ Frequently searched fields
+    ✓ Sort fields
+    ✓ Join/populate fields
+    ✗ Rarely searched fields (wastes storage)
+    ✗ Low-cardinality fields (few unique values)
+
+---
+
+Q25: What is connection pooling and how does Mongoose handle it?
+A:  Connection pooling maintains multiple database connections for efficiency.
+    
+    Without pooling:
+    // Creates new connection for each request (slow)
+    await mongoose.connect(url);
+    
+    With pooling:
+    await mongoose.connect(url, {
+      maxPoolSize: 10,    // Max connections
+      minPoolSize: 2      // Min connections
+    });
+    
+    Benefits:
+    ✓ Reuses connections (faster)
+    ✓ Handles concurrent requests
+    ✓ Automatic connection management
+    ✓ Improves performance
+
+═══════════════════════════════════════════════════════════════════════════════════════
+9. REAL-WORLD SCENARIOS
+═══════════════════════════════════════════════════════════════════════════════════════
+
+Q26: How would you handle a one-to-many relationship?
+A:  Post has many Comments. Each Comment belongs to one Post.
+    
+    Schema design:
+    // Post schema
+    const postSchema = new Schema({
+      title: String,
+      content: String
+    });
+    
+    // Comment schema
+    const commentSchema = new Schema({
+      text: String,
+      post: {
+        type: Schema.Types.ObjectId,
+        ref: 'Post',
+        required: true
+      },
+      author: String
+    });
+    
+    Query:
+    // Get post with all comments
+    const post = await Post.findById(postId).populate('comments');
+    
+    // Or manually
+    const post = await Post.findById(postId);
+    const comments = await Comment.find({ post: postId });
+
+---
+
+Q27: How would you implement soft delete (mark as deleted, not remove)?
+A:  Add deleted flag instead of removing document.
+    
+    Schema:
+    const postSchema = new Schema({
+      title: String,
+      deleted: { type: Boolean, default: false }
+    });
+    
+    Soft delete:
+    await Post.updateOne({ _id: id }, { deleted: true });
+    // Document still exists, just marked as deleted
+    
+    Query only active:
+    const posts = await Post.find({ deleted: false });
+    
+    Middleware to auto-filter:
+    postSchema.pre('find', function() {
+      this.where({ deleted: false });
+    });
+    
+    Restore:
+    await Post.updateOne({ _id: id }, { deleted: false });
+
+---
+
+Q28: How would you implement pagination API?
+A:  
+    Router:
+    app.get('/posts', async (req, res) => {
+      try {
+        const page = Math.max(1, req.query.page || 1);
+        const limit = Math.min(req.query.limit || 10, 100);
+        const skip = (page - 1) * limit;
+        
+        const posts = await Post.find()
+          .skip(skip)
+          .limit(limit)
+          .sort({ createdAt: -1 })
+          .lean();
+        
+        const total = await Post.countDocuments();
+        
+        res.json({
+          data: posts,
+          pagination: {
+            page,
+            limit,
+            total,
+            pages: Math.ceil(total / limit)
+          }
+        });
+      } catch (err) {
+        res.status(500).json({ error: err.message });
+      }
+    });
+    
+    Usage:
+    GET /posts?page=1&limit=10
+    // Returns first 10 posts + pagination info
+
+═══════════════════════════════════════════════════════════════════════════════════════
+10. TIPS FOR INTERVIEW SUCCESS
+═══════════════════════════════════════════════════════════════════════════════════════
+
+✓ Know the difference: Schema vs Model vs Document
+✓ Understand: Validation, error handling, middleware
+✓ Practice: CRUD operations with proper error handling
+✓ Remember: .lean() for performance, .populate() for relationships
+✓ Know: Indexes, pagination, aggregation basics
+✓ Prepare: Real-world examples (soft delete, relationships)
+✓ Mention: Best practices (connection pooling, error handling)
+✓ Be ready: To write code on whiteboard or IDE
+✓ Ask: Clarifying questions about requirements
+✓ Test: Your code before interviews
+
+═══════════════════════════════════════════════════════════════════════════════════════
+FREQUENTLY ASKED IN INTERVIEWS (BONUS)
+═══════════════════════════════════════════════════════════════════════════════════════
+
+Q29: What is the N+1 query problem and how to solve it?
+A:  Problem: Fetching documents then querying for each one.
+    
+    Bad (N+1 queries):
+    const posts = await Post.find();
+    for (let post of posts) {
+      post.author = await User.findById(post.author);
+    }
+    // 1 query for posts + N queries for each author = N+1
+    
+    Good (1 query):
+    const posts = await Post.find().populate('author');
+    // Single query with lookup
+
+---
+
+Q30: How do you secure sensitive data in MongoDB?
+A:  ✓ Hash passwords with bcrypt
+    ✓ Don't select sensitive fields (.select('-password'))
+    ✓ Validate input to prevent injection
+    ✓ Use environment variables for secrets
+    ✓ Implement authentication/authorization
+    ✓ Encrypt sensitive fields
+    ✓ Use HTTPS for data transmission
+    ✓ Implement rate limiting
+    ✓ Validate and sanitize input
+
+═══════════════════════════════════════════════════════════════════════════════════════
+
+Good luck with your interviews! 🎯
+Study these concepts and practice writing code. You've got this! 💪
+
+═══════════════════════════════════════════════════════════════════════════════════════
